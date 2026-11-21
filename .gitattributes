@@ -1,0 +1,6 @@
+*.pdf binary
+*.docx binary
+*.png binary
+
+# Preserve generated Jenkins evidence exactly, including console spacing.
+report/evidence/** -text whitespace=-blank-at-eol
