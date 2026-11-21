@@ -1,0 +1,6 @@
+git
+workflow-aggregator
+ssh-agent
+ws-cleanup
+timestamper
+pipeline-stage-view
