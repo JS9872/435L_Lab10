@@ -1,0 +1,88 @@
+def runPython(String arguments) {
+    if (isUnix()) {
+        sh "venv/bin/python ${arguments}"
+    } else {
+        bat "venv\\Scripts\\python.exe ${arguments}"
+    }
+}
+
+pipeline {
+    agent any
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+        timeout(time: 15, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+    stages {
+        stage('Setup') {
+            steps {
+                dir('jenkins_project') {
+                    script {
+                        if (isUnix()) {
+                            sh 'python3 -m venv venv'
+                            sh 'mkdir -p reports'
+                        } else {
+                            bat 'python -m venv venv'
+                            bat 'if not exist reports mkdir reports'
+                        }
+                        runPython('-m pip install -r requirements.txt')
+                    }
+                }
+            }
+        }
+        stage('Lint') {
+            steps {
+                dir('jenkins_project') {
+                    script { runPython('-m flake8 app.py deploy.py tests') }
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                dir('jenkins_project') {
+                    script { runPython('-m pytest -v --junitxml=reports/tests.xml') }
+                }
+            }
+        }
+        stage('Coverage') {
+            steps {
+                dir('jenkins_project') {
+                    script {
+                        runPython('-m coverage run -m pytest -v')
+                        runPython('-m coverage report')
+                        runPython('-m coverage xml')
+                        runPython('-m coverage html')
+                    }
+                }
+            }
+        }
+        stage('Security Scan') {
+            steps {
+                dir('jenkins_project') {
+                    script {
+                        runPython('-m bandit app.py deploy.py -f json -o reports/bandit.json')
+                        runPython('-m bandit app.py deploy.py')
+                    }
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                dir('jenkins_project') {
+                    script {
+                        def destination = "${env.JENKINS_HOME}/deployments/Python-CI-CD"
+                        runPython("deploy.py --destination \"${destination}\" --build-number ${env.BUILD_NUMBER} --commit ${env.GIT_COMMIT}")
+                    }
+                }
+            }
+        }
+    }
+    post {
+        always {
+            junit testResults: 'jenkins_project/reports/tests.xml', allowEmptyResults: true
+            archiveArtifacts artifacts: 'jenkins_project/reports/**/*', allowEmptyArchive: true
+            cleanWs()
+        }
+    }
+}
