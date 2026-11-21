@@ -11,7 +11,12 @@ Repository: https://github.com/JS9872/435L_Lab10
 - `jenkins_project/deploy.py`: versioned local deployment and smoke test.
 - `jenkins/job-config.xml`: importable **Python-CI-CD** job configuration.
 - `jenkins/plugins.txt`: required Jenkins plugins.
-- `report/`: report, screenshots, and evidence from the actual Jenkins build.
+- `report/Lab10_Report_Joey_Saade.pdf`: submission report with six embedded
+  screenshots; all four PDF pages were rendered and visually checked.
+- `report/Lab10_Report_Joey_Saade.docx`: editable companion report. Its structure
+  was checked; Word/LibreOffice rendering was unavailable on this machine.
+- `report/screenshots/` and `report/evidence/`: original screenshots and actual
+  Jenkins build outputs.
 - `Submission.txt`: repository link for Moodle.
 
 ## Run locally

@@ -7,3 +7,4 @@ htmlcov/
 jenkins_project/reports/
 *.pyc
 .runtime/
+local-deployments/
